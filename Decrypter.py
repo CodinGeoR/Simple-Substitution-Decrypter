@@ -1,5 +1,5 @@
 import random
-import math
+import numpy as np
 from colored import fg, attr
 
 
@@ -25,8 +25,8 @@ for line in open("english_quadgrams.txt"):
 # Se calcula la probabilidad logarítmica de cada quadgram
 n = sum(quadgrams.values())
 for quad in quadgrams.keys():
-    quadgrams[quad] = math.log10(float(quadgrams[quad] / n))
-floor = math.log10(0.01 / n)
+    quadgrams[quad] = np.log10(float(quadgrams[quad] / n))
+floor = np.log10(0.01 / n)
 
 # Se le pide al usuario la frase a desencriptar
 original_text = input("Enter crypted text:\n")
