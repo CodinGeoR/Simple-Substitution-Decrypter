@@ -1,3 +1,5 @@
+# Made with Python 3.10.3 for VSCode Version: 1.76.2 (user setup)
+
 import random
 import numpy as np
 from colored import fg, attr
@@ -13,7 +15,7 @@ def calc_score(text, quadgrams):
             score += quads(text[i : i + 4])
         else:
             score += floor
-    return score
+    return round(score, 3)
 
 
 # Se crea diccionario con cada uno de los quadgrams en el inglés y su respectiva frecuencia
@@ -23,9 +25,9 @@ for line in open("english_quadgrams.txt"):
     quadgrams[quad] = int(num)
 
 # Se calcula la probabilidad logarítmica de cada quadgram
-n = sum(quadgrams.values())
+n = len(quadgrams.values())
 for quad in quadgrams.keys():
-    quadgrams[quad] = np.log10(float(quadgrams[quad] / n))
+    quadgrams[quad] = np.log10(quadgrams[quad] / n)
 floor = np.log10(0.01 / n)
 
 # Se le pide al usuario la frase a desencriptar
@@ -35,7 +37,7 @@ print("\n" * 3)
 
 # Se crea lista con el alfabeto en inglés y la primera clave
 alphabet = list("ABCDEFGHIJKLMNOPQRSTUVWXYZ")
-best_key = alphabet[:]
+initial_key = alphabet[:]
 
 # Se explora el texto para encontrar caracteres especiales, estos se extraen y
 # se guardan en una lista con su respectivo index
@@ -47,17 +49,16 @@ for char in text:
         text = text.replace(char, "", 1)
         count += 1
 
-# Se asignan los valores iniciales del puntaje de la oración inicial,
+# Se asignan los valores iniciales del puntaje del texto encriptado,
 # el puntaje de validación y se le da un valor muy pequeño al
 # valor final para hacer una validación adecuada con los puntajes
 # obtenidos en cada iteración
 initial_score, valid_score, final_score = calc_score(list(text), quadgrams), None, -99e9
 
 # Valores iniciales del padre para el algoritmo genético
-random.shuffle(best_key)
-parent_key, parent_score, parent_guess = best_key[:], final_score, []
+random.shuffle(initial_key)
+parent_key, parent_guess = initial_key[:], []
 
-up, refresh = "\x1B[3A", "\x1B[0K"
 reset = fg(15) + attr(0)
 no_changes = 0
 current_gen = 0
@@ -74,14 +75,14 @@ while 1:
 
     # Inicializamos el ciclo para calcular los valores de los hijos
     count = 0
-    while count < 100:
+    while count < 310:
         a = random.randint(0, len(alphabet) - 1)
         b = random.randint(0, len(alphabet) - 1)
 
+        # Se obtiene la clave del hijo y el fitness score de su predicción
         child_key, child_guess = parent_key[:], []
         child_key[a], child_key[b] = child_key[b], child_key[a]
 
-        # Se obtiene la clave del hijo y el fitness score de su predicción
         for char in text:
             idx = alphabet.index(char)
             child_guess.append(child_key[idx])
@@ -89,7 +90,7 @@ while 1:
 
         # Se evalúa si el puntaje del hijo es mayor al del padre. En caso
         # de ser así, se establece el hijo como nuevo padre el cual empieza
-        # de nuevo a generar hijos
+        # una nueva genereación de hijos
         if child_score > parent_score:
             parent_score, parent_key, parent_guess = (
                 child_score,
@@ -97,7 +98,9 @@ while 1:
                 child_guess[:],
             )
             count = 0
-        count += 1
+            current_gen += 1
+        else:
+            count += 1
 
     # Se evalúa si el puntaje del padre es mayor al valor final. Si esto se
     # cumple, se establecen los valores del padre como los mejores valores
@@ -110,11 +113,12 @@ while 1:
         )
 
     # Se evalúa si el puntaje final es igual al puntaje de validación. En caso
-    # de que se cumpla, se acumula la iteración ya que se define que cuando se
-    # cumple esto 100 veces, el mensaje ya fue desencriptado y se rompe el ciclo
+    # de que se cumpla, se acumula la iteración ya que se define que cuando el
+    # puntaje no haya cambiado durante 113 veces seguidas, el mensaje fue
+    # desencriptado satisfactoriamente y se rompe el ciclo
     if final_score == valid_score:
         no_changes += 1
-        if no_changes == 100:
+        if no_changes == 113:
             break
     else:
         no_changes = 0
@@ -122,13 +126,13 @@ while 1:
     valid_score = final_score
 
     # Se imprimen los resultados de cada generación
-    if len(best_guess) > 140:
+    if len(best_guess) > 145:
         print(
-            f"{up}Current generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}{refresh}\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}{refresh}"
+            f"\x1B[3ACurrent generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}\r\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}\r"
         )
     else:
         print(
-            f"{up}Current generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}{refresh}\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}{refresh}\n"
+            f"\x1B[2ACurrent generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}\r\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}\r"
         )
 
 # Se agregan los caracteres especiales que fueron retirados del mensaje
