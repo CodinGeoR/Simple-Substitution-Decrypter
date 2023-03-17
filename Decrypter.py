@@ -23,9 +23,9 @@ for line in open("english_quadgrams.txt"):
     quadgrams[quad] = int(num)
 
 # Se calcula la probabilidad logarítmica de cada quadgram
-n = sum(quadgrams.values())
+n = len(quadgrams.values())
 for quad in quadgrams.keys():
-    quadgrams[quad] = np.log10(float(quadgrams[quad] / n))
+    quadgrams[quad] = np.log10(quadgrams[quad] / n)
 floor = np.log10(0.01 / n)
 
 # Se le pide al usuario la frase a desencriptar
@@ -57,7 +57,6 @@ initial_score, valid_score, final_score = calc_score(list(text), quadgrams), Non
 random.shuffle(best_key)
 parent_key, parent_score, parent_guess = best_key[:], final_score, []
 
-up, refresh = "\x1B[3A", "\x1B[0K"
 reset = fg(15) + attr(0)
 no_changes = 0
 current_gen = 0
@@ -124,11 +123,11 @@ while 1:
     # Se imprimen los resultados de cada generación
     if len(best_guess) > 140:
         print(
-            f"{up}Current generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}{refresh}\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}{refresh}"
+            f"\x1B[3ACurrent generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}\r\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}\r"
         )
     else:
         print(
-            f"{up}Current generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}{refresh}\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}{refresh}\n"
+            f"\x1B[2ACurrent generation: {fg(4)}{attr(1)}{current_gen}{reset} - Score: {fg(1)}{attr(1)}{final_score}{reset}\r\nGuessed text: {fg(243)}{attr(1)}{''.join(best_guess)}{reset}\r"
         )
 
 # Se agregan los caracteres especiales que fueron retirados del mensaje
